@@ -1,11 +1,12 @@
-package service_test
+package services_test
 
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"ya41-56/internal/accrual/models"
-	"ya41-56/internal/accrual/service"
+	"ya41-56/internal/accrual/services"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCalculateAccrual(t *testing.T) {
@@ -19,7 +20,7 @@ func TestCalculateAccrual(t *testing.T) {
 		{Description: "Чипсы Pringles бекон", Price: 147.5},
 	}
 
-	accrual := service.NewAccrualCounter().CalculateAccrual(goods, mechanics)
+	accrual := services.NewAccrualCounter().CalculateAccrual(goods, mechanics)
 
 	require.Equal(t, float32(27.25), accrual, "сумма начислений должна быть 27.25")
 }

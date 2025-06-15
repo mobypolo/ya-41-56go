@@ -2,13 +2,14 @@ package repositories_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"strconv"
 	"testing"
 	"ya41-56/internal/accrual/models"
 	"ya41-56/internal/shared/repositories"
+
+	"github.com/stretchr/testify/require"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {

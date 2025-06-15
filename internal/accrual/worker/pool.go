@@ -2,12 +2,13 @@ package worker
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"time"
 	"ya41-56/internal/accrual/models"
-	"ya41-56/internal/accrual/service"
+	"ya41-56/internal/accrual/services"
 	"ya41-56/internal/shared/logger"
 	"ya41-56/internal/shared/repositories"
+
+	"go.uber.org/zap"
 )
 
 type Pool struct {
@@ -65,7 +66,7 @@ func (p *Pool) worker(id int) {
 			continue
 		}
 
-		accrual := service.NewAccrualCounter().CalculateAccrual(orderWithGoods.Goods, mechanics)
+		accrual := services.NewAccrualCounter().CalculateAccrual(orderWithGoods.Goods, mechanics)
 		orderWithGoods.Accrual = accrual
 		orderWithGoods.Status = "PROCESSED"
 

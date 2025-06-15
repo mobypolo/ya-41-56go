@@ -1,18 +1,20 @@
 package bootstrap
 
 import (
-	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
 	httpServer "net/http"
 	"ya41-56/cmd"
 	dbLocal "ya41-56/internal/gophermart/db"
 	"ya41-56/internal/gophermart/di"
+	commonErrors "ya41-56/internal/gophermart/errors"
 	"ya41-56/internal/gophermart/models"
 	"ya41-56/internal/gophermart/router"
 	"ya41-56/internal/gophermart/services"
 	"ya41-56/internal/shared/db"
 	"ya41-56/internal/shared/logger"
 	"ya41-56/internal/shared/repositories"
+
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
 func Run() {
@@ -25,14 +27,18 @@ func Run() {
 	}, dbLocal.Migrate)
 
 	if dbConn == nil {
-		logger.L().Fatal("failed to init database")
+		logger.L().Fatal(commonErrors.ErrInitDB.Error())
 	}
 
 	userRepo := repositories.NewGormRepository[models.User](dbConn)
 
+	if cfg.JWTSecretKey == "" {
+		logger.L().Fatal(commonErrors.ErrEmptySecretKey.Error())
+	}
+
 	r := router.RegisterRoutes(&di.AppContainer{
 		UserRepo: userRepo,
-		Auth:     services.NewAuthService(userRepo), // тут должен быть сервис для авторизации, сейчас нет реализации
+		Auth:     services.NewAuthService(userRepo, services.NewTokenService(cfg.JWTSecretKey, cfg.JWTLifetime)),
 		Router:   chi.NewRouter(),
 		Cfg:      cfg,
 		Gorm:     dbConn,
@@ -42,6 +48,6 @@ func Run() {
 
 	err := httpServer.ListenAndServe(cfg.Address, r)
 	if err != nil {
-		logger.L().Fatal("failed to start HTTP server", zap.Error(err))
+		logger.L().Fatal(commonErrors.ErrHTTPServer.Error(), zap.Error(err))
 	}
 }

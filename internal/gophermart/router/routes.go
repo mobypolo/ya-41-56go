@@ -1,17 +1,18 @@
 package router
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
 	"net/http"
 	"ya41-56/internal/gophermart/di"
 	"ya41-56/internal/gophermart/handlers"
 	sharedHandlers "ya41-56/internal/shared/handlers"
 	"ya41-56/internal/shared/http/middleware"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func RegisterRoutes(appContainer *di.AppContainer) http.Handler {
-	authMiddleware := middleware.New(*appContainer.Auth)
+	authMiddleware := middleware.New(appContainer.Auth)
 
 	authHandler := handlers.NewAuthHandler(appContainer.Auth)
 	usersHandler := handlers.NewUsersHandler(appContainer.Auth)
