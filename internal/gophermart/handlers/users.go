@@ -106,7 +106,7 @@ func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, balanceResponse{
-		// NOTE: SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED"
+		// NOTE: Current = SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED"
 		Current:   current,
 		Withdrawn: 0,
 	})
