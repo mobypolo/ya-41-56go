@@ -52,7 +52,7 @@ func (p *Pool) worker(id int) {
 
 		ctx := context.Background()
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(1 * time.Second)
 
 		orderWithGoods, err := p.ordersRepo.FindByIDWithPreloads(ctx, task.OrderID, "Goods")
 		if err != nil {

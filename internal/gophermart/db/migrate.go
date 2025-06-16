@@ -9,6 +9,7 @@ import (
 func Migrate(db *gorm.DB) error {
 	if err := db.AutoMigrate(
 		models.User{},
+		models.Order{},
 	); err != nil {
 		logger.L().Info("auto migration to postgres failed")
 		return err

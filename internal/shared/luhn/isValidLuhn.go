@@ -4,24 +4,25 @@ func IsValidLuhn(number string) bool {
 	if number == "" {
 		return false
 	}
-	sum := 0
-	alt := false
 
-	for i := len(number) - 1; i >= 0; i-- {
-		digit := number[i]
-		if digit < '0' || digit > '9' {
+	sum := 0
+	isOddLength := len(number)%2 != 0
+
+	for i, r := range number {
+		if r < '0' || r > '9' {
 			return false
 		}
 
-		n := int(digit - '0')
-		if alt {
+		n := int(r - '0')
+		if (i%2 == 0) == !isOddLength { // чет-нечет сдвиг
 			n *= 2
 			if n > 9 {
 				n -= 9
 			}
 		}
+
 		sum += n
-		alt = !alt
 	}
+
 	return sum%10 == 0
 }

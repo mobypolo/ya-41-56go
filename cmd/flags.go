@@ -2,14 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/caarlos0/env/v11"
+	"github.com/joho/godotenv"
 	"github.com/spf13/pflag"
 	"log"
 	"os"
 	"time"
 	"ya41-56/internal/shared/logger"
-
-	"github.com/caarlos0/env/v11"
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -21,6 +20,7 @@ type Config struct {
 	ShutdownTimeout time.Duration     `env:"SHUTDOWN_TIMEOUT" envDefault:"5s"`
 	JWTSecretKey    string            `env:"JWT_SECRET_KEY"`
 	JWTLifetime     time.Duration     `env:"JWT_LIFETIME" envDefault:"1h"`
+	AccrualAddress  string            `env:"ACCRUAL_SYSTEM_ADDRESS" envDefault:"http://localhost:8081"`
 }
 
 func ParseFlags() Config {

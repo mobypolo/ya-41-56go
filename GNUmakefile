@@ -10,7 +10,22 @@ default: build
 
 build: build_gophermart build_accrual
 
-combine:
+combine_mart:
+	@echo "Combining Go files into $(COMBINED_FILE)..."
+	@rm -f $(COMBINED_FILE)
+	@{ \
+		echo cmd/flags.go; \
+		find cmd/gophermart -type f -name "*.go"; \
+		find internal/gophermart -type f -name "*.go"; \
+		find internal/shared -type f -name "*.go"; \
+	} | while read -r file; do \
+		echo "// ===== $$file =====" >> $(COMBINED_FILE); \
+		cat "$$file" >> $(COMBINED_FILE); \
+		echo "" >> $(COMBINED_FILE); \
+	done
+	@echo "Done: $(COMBINED_FILE)"
+
+combine_accrual:
 	@echo "Combining Go files into $(COMBINED_FILE)..."
 	@rm -f $(COMBINED_FILE)
 	@{ \
