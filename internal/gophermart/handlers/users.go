@@ -87,7 +87,7 @@ func (h *UsersHandler) CreateNew(w http.ResponseWriter, r *http.Request) {
 // Balance
 
 type balanceResponse struct {
-	Current   float64 `json:"Current"`
+	Current   float64 `json:"current"`
 	Withdrawn int     `json:"withdrawn"`
 }
 
