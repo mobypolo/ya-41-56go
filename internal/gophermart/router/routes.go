@@ -1,17 +1,18 @@
 package router
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
 	"net/http"
 	"ya41-56/internal/gophermart/di"
 	"ya41-56/internal/gophermart/handlers"
 	sharedHandlers "ya41-56/internal/shared/handlers"
 	"ya41-56/internal/shared/http/middleware"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func RegisterRoutes(appContainer *di.AppContainer) http.Handler {
-	authMiddleware := middleware.New(*appContainer.Auth)
+	authMiddleware := middleware.New(appContainer.Auth, appContainer.UserRepo)
 
 	authHandler := handlers.NewAuthHandler(appContainer.Auth)
 	usersHandler := handlers.NewUsersHandler(appContainer.Auth)
@@ -27,14 +28,13 @@ func RegisterRoutes(appContainer *di.AppContainer) http.Handler {
 
 	appContainer.Router.Get("/ping", sharedHandlers.PingHandler(appContainer.Gorm))
 
-	// TODO: Нигде в методах нет реализации, чисто заглушки
 	appContainer.Router.Route("/api", func(r chi.Router) {
 		r.Route("/user", func(r chi.Router) {
 			r.Post("/login", authHandler.Login)
 			r.Post("/register", authHandler.Register)
 
 			r.Group(func(r chi.Router) {
-				r.Use(authMiddleware.IsAuthenticated)
+				r.Use(authMiddleware.WithAuth)
 
 				r.Get("/me", authHandler.GetMe)
 				r.Get("/orders", usersHandler.List)

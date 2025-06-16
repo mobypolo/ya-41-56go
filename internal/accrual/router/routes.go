@@ -1,12 +1,13 @@
 package router
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
 	"net/http"
 	"ya41-56/internal/accrual/di"
 	"ya41-56/internal/accrual/handlers"
 	sharedHandlers "ya41-56/internal/shared/handlers"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func RegisterRoutes(appContainer *di.AppContainer) http.Handler {

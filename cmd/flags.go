@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v11"
-	"github.com/joho/godotenv"
-	"github.com/spf13/pflag"
 	"log"
 	"os"
 	"time"
 	"ya41-56/internal/shared/logger"
+
+	"github.com/caarlos0/env/v11"
+	"github.com/joho/godotenv"
+	"github.com/spf13/pflag"
 )
 
 type Config struct {
@@ -18,6 +19,8 @@ type Config struct {
 	CorsOrigins     []string          `env:"CORS_ORIGINS" envDefault:"http://localhost:3000"`
 	WorkersCount    int               `env:"WORKERS_COUNT" envDefault:"5"`
 	ShutdownTimeout time.Duration     `env:"SHUTDOWN_TIMEOUT" envDefault:"5s"`
+	JWTSecretKey    string            `env:"JWT_SECRET_KEY"`
+	JWTLifetime     time.Duration     `env:"JWT_LIFETIME" envDefault:"1h"`
 }
 
 func ParseFlags() Config {
