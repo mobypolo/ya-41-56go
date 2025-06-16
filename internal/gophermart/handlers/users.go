@@ -83,3 +83,17 @@ func (h *UsersHandler) CreateNew(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, createdUser)
 }
+
+// Balance
+
+type balanceResponse struct {
+	Current   float64 `json:"Current"`
+	Withdrawn int     `json:"withdrawn"`
+}
+
+func (h *UsersHandler) Balance(w http.ResponseWriter, _ *http.Request) {
+	response.JSON(w, http.StatusOK, balanceResponse{
+		Current:   0,
+		Withdrawn: 0,
+	})
+}
