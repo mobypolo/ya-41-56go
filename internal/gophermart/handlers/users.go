@@ -12,14 +12,16 @@ import (
 )
 
 type UsersHandler struct {
-	Users repositories.Repository[models.User]
-	Auth  *services.AuthService
+	Auth   *services.AuthService
+	Orders repositories.Repository[models.Order]
+	Users  repositories.Repository[models.User]
 }
 
-func NewUsersHandler(authService *services.AuthService) *UsersHandler {
+func NewUsersHandler(authService *services.AuthService, orderRepo repositories.Repository[models.Order]) *UsersHandler {
 	return &UsersHandler{
-		Users: authService.Users,
-		Auth:  authService,
+		Auth:   authService,
+		Orders: orderRepo,
+		Users:  authService.Users,
 	}
 }
 
@@ -91,9 +93,21 @@ type balanceResponse struct {
 	Withdrawn int     `json:"withdrawn"`
 }
 
-func (h *UsersHandler) Balance(w http.ResponseWriter, _ *http.Request) {
+func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
+	orders, err := h.Orders.FindManyByField(r.Context(), "status", models.OrderStatusProcessed)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED"
+	current := float64(0.0)
+	for _, order := range orders {
+		current += float64(order.Accrual)
+	}
+
 	response.JSON(w, http.StatusOK, balanceResponse{
-		Current:   0,
+		Current:   current,
 		Withdrawn: 0,
 	})
 }

@@ -5,7 +5,7 @@ import "time"
 const (
 	OrderStatusNew = "NEW"
 	//OrderStatusProcessing  = "PROCESSING"
-	//OrderStatusProcessed   = "PROCESSED"
+	OrderStatusProcessed   = "PROCESSED"
 	OrderStatusFailedFetch = "FAILED_FETCH"
 )
 
