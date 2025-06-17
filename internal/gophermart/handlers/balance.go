@@ -6,6 +6,7 @@ import (
 	"ya41-56/internal/gophermart/customerror"
 	"ya41-56/internal/gophermart/models"
 	"ya41-56/internal/shared/contextutil"
+	"ya41-56/internal/shared/customstrings"
 	"ya41-56/internal/shared/httputil"
 	"ya41-56/internal/shared/luhn"
 	"ya41-56/internal/shared/repositories"
@@ -53,13 +54,13 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Begin the transaction
 
-	orders, err := h.Orders.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
+	orders, err := h.Orders.FindManyByField(r.Context(), "user_id", customstrings.ParseID(userIDStr))
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	withdrawals, err := h.Withdrawal.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
+	withdrawals, err := h.Withdrawal.FindManyByField(r.Context(), "user_id", customstrings.ParseID(userIDStr))
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -89,7 +90,7 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	withdrawal := &models.Withdrawal{
-		UserID: parseID(userIDStr),
+		UserID: customstrings.ParseID(userIDStr),
 		Order:  number,
 		Value:  float32(req.Sum),
 	}

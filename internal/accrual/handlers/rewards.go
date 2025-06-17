@@ -4,8 +4,10 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"net/http"
+	"slices"
 	"ya41-56/internal/accrual/models"
 	"ya41-56/internal/shared/httputil"
+	models2 "ya41-56/internal/shared/models"
 	"ya41-56/internal/shared/repositories"
 	"ya41-56/internal/shared/response"
 )
@@ -21,9 +23,9 @@ func NewRewardsHandler(repo repositories.Repository[models.RewardMechanic]) *Rew
 }
 
 type CreateMechanicRequest struct {
-	Match      string  `json:"match"`
-	Reward     float32 `json:"reward"`
-	RewardType string  `json:"reward_type"`
+	Match      string             `json:"match"`
+	Reward     float32            `json:"reward"`
+	RewardType models2.RewardType `json:"reward_type"`
 }
 
 func (h *RewardsHandler) CreateRewards(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +51,13 @@ func (h *RewardsHandler) CreateRewards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.RewardType != "%" && req.RewardType != "pt" {
+	if !slices.Contains(
+		[]models2.RewardType{
+			models2.RewardTypePercent,
+			models2.RewardTypePoints,
+		},
+		req.RewardType,
+	) {
 		response.Error(w, http.StatusBadRequest, "invalid reward type")
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"math"
 	"strings"
 	"ya41-56/internal/accrual/models"
+	sharedModels "ya41-56/internal/shared/models"
 )
 
 type AccrualService interface {
@@ -24,9 +25,9 @@ func (h *AccrualCounter) CalculateAccrual(goods []models.Good, mechanics []model
 		for _, m := range mechanics {
 			if strings.Contains(strings.ToLower(g.Description), strings.ToLower(m.Match)) {
 				switch m.RewardType {
-				case "%":
+				case sharedModels.RewardTypePercent:
 					total += float64(g.Price) * float64(m.Reward) / 100
-				case "pt":
+				case sharedModels.RewardTypePoints:
 					total += float64(m.Reward)
 				}
 			}
