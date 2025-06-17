@@ -14,7 +14,7 @@ type Order struct {
 	UserID  uint    `gorm:"index"`
 	Number  string  `gorm:"uniqueIndex;not null"`
 	Status  string  `gorm:"default:'NEW'"`
-	Accrual float64 `gorm:"default:0"`
+	Accrual float32 `gorm:"default:0"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
