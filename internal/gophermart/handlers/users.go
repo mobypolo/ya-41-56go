@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"ya41-56/internal/gophermart/models"
 	"ya41-56/internal/gophermart/services"
+	"ya41-56/internal/shared/contextutil"
 	"ya41-56/internal/shared/httputil"
 	"ya41-56/internal/shared/logger"
 	"ya41-56/internal/shared/repositories"
@@ -12,16 +13,18 @@ import (
 )
 
 type UsersHandler struct {
-	Auth   *services.AuthService
-	Orders repositories.Repository[models.Order]
-	Users  repositories.Repository[models.User]
+	Auth       *services.AuthService
+	Orders     repositories.Repository[models.Order]
+	Users      repositories.Repository[models.User]
+	Withdrawal repositories.Repository[models.Withdrawal]
 }
 
-func NewUsersHandler(authService *services.AuthService, orderRepo repositories.Repository[models.Order]) *UsersHandler {
+func NewUsersHandler(authService *services.AuthService, orderRepo repositories.Repository[models.Order], withdrawalRepo repositories.Repository[models.Withdrawal]) *UsersHandler {
 	return &UsersHandler{
-		Auth:   authService,
-		Orders: orderRepo,
-		Users:  authService.Users,
+		Auth:       authService,
+		Orders:     orderRepo,
+		Users:      authService.Users,
+		Withdrawal: withdrawalRepo,
 	}
 }
 
@@ -90,11 +93,24 @@ func (h *UsersHandler) CreateNew(w http.ResponseWriter, r *http.Request) {
 
 type balanceResponse struct {
 	Current   float64 `json:"current"`
-	Withdrawn int     `json:"withdrawn"`
+	Withdrawn float64 `json:"withdrawn"`
 }
 
+// TODO: accumulate the results of calculations
 func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
-	orders, err := h.Orders.FindManyByField(r.Context(), "status", models.OrderStatusProcessed)
+	userIDStr, ok := contextutil.GetUserID(r.Context())
+	if !ok {
+		response.Error(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		return
+	}
+
+	orders, err := h.Orders.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	withdrawals, err := h.Withdrawal.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -102,12 +118,20 @@ func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
 
 	current := float64(0.0)
 	for _, order := range orders {
-		current += float64(order.Accrual)
+		if order.Status == models.OrderStatusProcessed {
+			current += float64(order.Accrual)
+		}
+	}
+
+	withdrawn := float64(0.0)
+	for _, withdrawal := range withdrawals {
+		withdrawn += float64(withdrawal.Value)
 	}
 
 	response.JSON(w, http.StatusOK, balanceResponse{
-		// NOTE: Current = SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED"
-		Current:   current,
-		Withdrawn: 0,
+		// NOTE: Current = SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED AND user_id = ..."
+		Current: current,
+		// NOTE: Withdrawn = SELECT SUM(value) FROM withdrawals user_id = ...
+		Withdrawn: withdrawn,
 	})
 }

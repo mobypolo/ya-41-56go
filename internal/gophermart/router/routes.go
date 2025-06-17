@@ -16,7 +16,7 @@ func RegisterRoutes(appContainer *di.AppContainer) http.Handler {
 
 	authHandler := handlers.NewAuthHandler(appContainer.Auth)
 	balanceHandler := handlers.NewBalanceHandler()
-	usersHandler := handlers.NewUsersHandler(appContainer.Auth, appContainer.OrderRepo)
+	usersHandler := handlers.NewUsersHandler(appContainer.Auth, appContainer.OrderRepo, appContainer.WithdrawalRepo)
 	ordersHandler := handlers.NewOrdersHandler(appContainer.OrderRepo, appContainer.FetchPool)
 
 	appContainer.Router.Use(cors.Handler(cors.Options{
