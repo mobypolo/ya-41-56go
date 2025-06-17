@@ -6,7 +6,7 @@ type Withdrawal struct {
 	ID     uint    `gorm:"primaryKey"`
 	UserID uint    `gorm:"index"`
 	Order  string  `gorm:"uniqueIndex;not null"`
-	Value  float32 `gorm:"default:0"`
+	Value  float64 `gorm:"default:0"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

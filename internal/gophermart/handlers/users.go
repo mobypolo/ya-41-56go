@@ -162,7 +162,8 @@ func (h *UsersHandler) Withdrawals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(withdrawals) == 0 {
-		w.WriteHeader(http.StatusNoContent)
+		response.JSON(w, http.StatusNoContent)
+
 		return
 	}
 

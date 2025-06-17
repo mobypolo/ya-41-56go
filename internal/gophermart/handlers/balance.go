@@ -8,9 +8,12 @@ import (
 	"ya41-56/internal/shared/contextutil"
 	"ya41-56/internal/shared/customstrings"
 	"ya41-56/internal/shared/httputil"
+	"ya41-56/internal/shared/logger"
 	"ya41-56/internal/shared/luhn"
 	"ya41-56/internal/shared/repositories"
 	"ya41-56/internal/shared/response"
+
+	"go.uber.org/zap"
 )
 
 type BalanceHandler struct {
@@ -47,12 +50,11 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Sum == 0 {
-		response.Error(w, http.StatusConflict, http.StatusText(http.StatusConflict))
+	if req.Sum <= 0 {
+		response.Error(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		logger.L().Error("bad value", zap.Float64("sum", req.Sum))
 		return
 	}
-
-	// TODO: Begin the transaction
 
 	orders, err := h.Orders.FindManyByField(r.Context(), "user_id", customstrings.ParseID(userIDStr))
 	if err != nil {
@@ -92,7 +94,7 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	withdrawal := &models.Withdrawal{
 		UserID: customstrings.ParseID(userIDStr),
 		Order:  number,
-		Value:  float32(req.Sum),
+		Value:  float64(req.Sum),
 	}
 
 	err = h.Withdrawal.Create(r.Context(), withdrawal)
