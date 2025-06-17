@@ -1,3 +1,4 @@
+// Luhn algorithm
 package luhn
 
 func IsValidLuhn(number string) bool {

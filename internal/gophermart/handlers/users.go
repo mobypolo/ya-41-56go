@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 	"ya41-56/internal/gophermart/models"
@@ -130,7 +131,7 @@ func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, balanceResponse{
 		// NOTE: Current = SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED AND user_id = ..."
-		Current: sumOfAccruals - sumOfWithdrawals,
+		Current: float64(math.Round(sumOfAccruals-sumOfWithdrawals*100) / 100),
 		// NOTE: Withdrawn = SELECT SUM(value) FROM withdrawals user_id = ...
 		Withdrawn: sumOfWithdrawals,
 	})
