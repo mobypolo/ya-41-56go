@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
-	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"strings"
@@ -13,6 +11,8 @@ import (
 	"ya41-56/internal/shared/luhn"
 	"ya41-56/internal/shared/repositories"
 	"ya41-56/internal/shared/response"
+
+	"gorm.io/gorm"
 )
 
 type OrdersHandler struct {
@@ -95,10 +95,4 @@ func (h *OrdersHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, orders)
-}
-
-func parseID(id string) uint {
-	var uid uint
-	_, _ = fmt.Sscanf(id, "%d", &uid)
-	return uid
 }

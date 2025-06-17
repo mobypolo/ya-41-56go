@@ -43,7 +43,7 @@ func RegisterRoutes(appContainer *di.AppContainer) http.Handler {
 				r.Post("/orders", ordersHandler.Upload)
 				r.Get("/balance", usersHandler.Balance)
 				r.Post("/balance/withdraw", balanceHandler.Withdraw)
-				r.Get("/withdrawals", usersHandler.List)
+				r.Get("/withdrawals", usersHandler.Withdrawals)
 			})
 		})
 	})

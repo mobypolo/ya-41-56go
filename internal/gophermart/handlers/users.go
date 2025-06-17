@@ -4,6 +4,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 	"ya41-56/internal/gophermart/models"
 	"ya41-56/internal/gophermart/services"
 	"ya41-56/internal/shared/contextutil"
@@ -135,4 +136,53 @@ func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
 		// NOTE: Withdrawn = SELECT SUM(value) FROM withdrawals user_id = ...
 		Withdrawn: sumOfWithdrawals,
 	})
+}
+
+// Withdrawals
+
+type withdrawalResponse struct {
+	Order       string    `json:"order"`
+	Sum         float64   `json:"sum"`
+	ProcessedAt time.Time `json:"processed_at"` // RFC3339
+}
+
+func (h *UsersHandler) Withdrawals(w http.ResponseWriter, r *http.Request) {
+	userIDStr, ok := contextutil.GetUserID(r.Context())
+	if !ok {
+		response.Error(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		return
+	}
+
+	orders, err := h.Orders.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	numbers := make(map[uint]string, 0)
+	for _, order := range orders {
+		numbers[order.ID] = order.Number
+	}
+
+	// SELECT * FROM withdrawals WHERE user_id = ... ORDER BY created_at ASC
+	withdrawals, err := h.Withdrawal.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(withdrawals) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	records := make([]withdrawalResponse, 0, len(withdrawals))
+	for i := 0; i < len(withdrawals); i++ {
+		records = append(records, withdrawalResponse{
+			Order:       numbers[withdrawals[i].OrderID],
+			Sum:         float64(withdrawals[i].Value),
+			ProcessedAt: withdrawals[i].CreatedAt,
+		})
+	}
+
+	response.JSON(w, http.StatusOK, records)
 }
