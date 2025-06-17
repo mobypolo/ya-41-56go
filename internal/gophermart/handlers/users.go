@@ -153,16 +153,6 @@ func (h *UsersHandler) Withdrawals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orders, err := h.Orders.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
-	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	numbers := make(map[uint]string, 0)
-	for _, order := range orders {
-		numbers[order.ID] = order.Number
-	}
-
 	// SELECT * FROM withdrawals WHERE user_id = ... ORDER BY created_at ASC
 	withdrawals, err := h.Withdrawal.FindManyByField(r.Context(), "user_id", parseID(userIDStr))
 	if err != nil {
@@ -178,7 +168,7 @@ func (h *UsersHandler) Withdrawals(w http.ResponseWriter, r *http.Request) {
 	records := make([]withdrawalResponse, 0, len(withdrawals))
 	for i := 0; i < len(withdrawals); i++ {
 		records = append(records, withdrawalResponse{
-			Order:       numbers[withdrawals[i].OrderID],
+			Order:       withdrawals[i].Order,
 			Sum:         float64(withdrawals[i].Value),
 			ProcessedAt: withdrawals[i].CreatedAt,
 		})

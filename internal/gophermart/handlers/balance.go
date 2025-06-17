@@ -7,6 +7,7 @@ import (
 	"ya41-56/internal/gophermart/models"
 	"ya41-56/internal/shared/contextutil"
 	"ya41-56/internal/shared/httputil"
+	"ya41-56/internal/shared/luhn"
 	"ya41-56/internal/shared/repositories"
 	"ya41-56/internal/shared/response"
 )
@@ -33,14 +34,20 @@ type withdrawRequest struct {
 // TODO: accumulate the results of calculations (use Balance model)
 func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	var req withdrawRequest
+
+	userIDStr, ok := contextutil.GetUserID(r.Context())
+	if !ok {
+		response.Error(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		return
+	}
+
 	if err := httputil.ParseJSON(r, &req); err != nil {
 		response.Error(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
 
-	userIDStr, ok := contextutil.GetUserID(r.Context())
-	if !ok {
-		response.Error(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+	if req.Sum == 0 {
+		response.Error(w, http.StatusConflict, http.StatusText(http.StatusConflict))
 		return
 	}
 
@@ -59,25 +66,10 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sumOfAccruals := float64(0.0)
-	var currentOrder models.Order
 	for _, order := range orders {
 		if order.Status == models.OrderStatusProcessed {
 			sumOfAccruals += float64(order.Accrual)
 		}
-
-		if order.Number == strings.TrimSpace(req.Order) {
-			currentOrder = order
-		}
-	}
-
-	if currentOrder.Number != strings.TrimSpace(req.Order) {
-		response.Error(w, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity))
-		return
-	}
-
-	if req.Sum == 0 || currentOrder.Accrual == 0 || currentOrder.Status != models.OrderStatusProcessed {
-		response.Error(w, http.StatusConflict, http.StatusText(http.StatusConflict))
-		return
 	}
 
 	sumOfWithdrawals := float64(0.0)
@@ -90,10 +82,16 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	number := strings.TrimSpace(req.Order)
+	if !luhn.IsValidLuhn(number) {
+		response.Error(w, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity))
+		return
+	}
+
 	withdrawal := &models.Withdrawal{
-		UserID:  parseID(userIDStr),
-		OrderID: currentOrder.ID,
-		Value:   float32(req.Sum),
+		UserID: parseID(userIDStr),
+		Order:  number,
+		Value:  float32(req.Sum),
 	}
 
 	err = h.Withdrawal.Create(r.Context(), withdrawal)
