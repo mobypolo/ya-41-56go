@@ -74,7 +74,7 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if currentOrder.ID == 0 {
+	if currentOrder.Number != req.Order {
 		response.Error(w, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity))
 		return
 	}
