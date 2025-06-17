@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 	"ya41-56/internal/gophermart/customerror"
 	"ya41-56/internal/gophermart/models"
 	"ya41-56/internal/shared/contextutil"
@@ -37,11 +38,6 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Sum == 0 {
-		response.Error(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-		return
-	}
-
 	userIDStr, ok := contextutil.GetUserID(r.Context())
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
@@ -69,13 +65,18 @@ func (h *BalanceHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 			sumOfAccruals += float64(order.Accrual)
 		}
 
-		if order.Number == req.Order {
+		if order.Number == strings.TrimSpace(req.Order) {
 			currentOrder = order
 		}
 	}
 
-	if currentOrder.Number != req.Order {
+	if currentOrder.Number != strings.TrimSpace(req.Order) {
 		response.Error(w, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity))
+		return
+	}
+
+	if req.Sum == 0 || currentOrder.Accrual == 0 || currentOrder.Status != models.OrderStatusProcessed {
+		response.Error(w, http.StatusConflict, http.StatusText(http.StatusConflict))
 		return
 	}
 
