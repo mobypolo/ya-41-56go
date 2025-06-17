@@ -96,7 +96,7 @@ type balanceResponse struct {
 	Withdrawn float64 `json:"withdrawn"`
 }
 
-// TODO: accumulate the results of calculations
+// TODO: accumulate the results of calculations (use Balance model)
 func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
 	userIDStr, ok := contextutil.GetUserID(r.Context())
 	if !ok {
@@ -116,22 +116,22 @@ func (h *UsersHandler) Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	current := float64(0.0)
+	sumOfAccruals := float64(0.0)
 	for _, order := range orders {
 		if order.Status == models.OrderStatusProcessed {
-			current += float64(order.Accrual)
+			sumOfAccruals += float64(order.Accrual)
 		}
 	}
 
-	withdrawn := float64(0.0)
+	sumOfWithdrawals := float64(0.0)
 	for _, withdrawal := range withdrawals {
-		withdrawn += float64(withdrawal.Value)
+		sumOfWithdrawals += float64(withdrawal.Value)
 	}
 
 	response.JSON(w, http.StatusOK, balanceResponse{
 		// NOTE: Current = SELECT SUM(accrual) FROM orders WHERE status = "PROCESSED AND user_id = ..."
-		Current: current,
+		Current: sumOfAccruals - sumOfWithdrawals,
 		// NOTE: Withdrawn = SELECT SUM(value) FROM withdrawals user_id = ...
-		Withdrawn: withdrawn,
+		Withdrawn: sumOfWithdrawals,
 	})
 }

@@ -15,7 +15,7 @@ func RegisterRoutes(appContainer *di.AppContainer) http.Handler {
 	authMiddleware := middleware.New(appContainer.Auth, appContainer.UserRepo)
 
 	authHandler := handlers.NewAuthHandler(appContainer.Auth)
-	balanceHandler := handlers.NewBalanceHandler()
+	balanceHandler := handlers.NewBalanceHandler(appContainer.OrderRepo, appContainer.WithdrawalRepo)
 	usersHandler := handlers.NewUsersHandler(appContainer.Auth, appContainer.OrderRepo, appContainer.WithdrawalRepo)
 	ordersHandler := handlers.NewOrdersHandler(appContainer.OrderRepo, appContainer.FetchPool)
 

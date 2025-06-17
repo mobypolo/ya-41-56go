@@ -11,4 +11,6 @@ var (
 	ErrUserExists           = errors.New("user already exists")
 	ErrJWTToken             = errors.New("invalid JWT token")
 	ErrGenerateRandomString = errors.New("failed to generate random string")
+
+	ErrNotEnoughFunds = errors.New("not enough funds")
 )
